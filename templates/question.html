@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Question {{question_num}}{% endblock %}
+
+
+{% block main_content %}
+<h1>{{quiz_title}}</h1>
+<form action="/answer" method="POST">
+    <h3>{{question_text}}</h3>
+    {% for option in answer_options %}
+    <div>
+        <input type="radio" name="answer" value="{{option}}" required="true">
+        <label for="{{option}}">{{option}}</label>
+    </div>
+         <input type="hidden" name="">
+    {% endfor %}
+    <div><button>Submit</button>
+    </div>
+</form>
+
+{% endblock %}
