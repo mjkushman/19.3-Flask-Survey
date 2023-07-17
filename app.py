@@ -1,8 +1,7 @@
-from flask import Flask, request, render_template, redirect, flash, jsonify
+from flask import Flask, request, render_template, redirect, flash, jsonify, session
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import satisfaction_survey
 
-RESPONSES = []
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "mysecurepassword"
@@ -15,16 +14,22 @@ instructions = satisfaction_survey.instructions
 
 @app.route("/")
 def show_home():
+    # session['RESPONSES']  = []
     return render_template(
         "index.html", quiz_title=quiz_title, instructions=instructions
     )
 
+@app.route('/survey-start', methods=['POST'])
+def start_survey():
+    session['RESPONSES'] =[]
+    return redirect (f"/questions/{len(session['RESPONSES'])}")
+
 
 @app.route("/questions/<question_num>")
 def show_question(question_num):
-    if int(question_num) != len(RESPONSES):
+    if int(question_num) != len(session['RESPONSES']):
         flash("Please answer this question before proceeding.",'error')
-        return redirect (f'/questions/{len(RESPONSES)}')
+        return redirect (f"/questions/{len(session['RESPONSES'])}")
     
     current_question = satisfaction_survey.questions[int(question_num)]
     question_text = current_question.question #gets the specific question text
@@ -41,15 +46,17 @@ def show_question(question_num):
 
 @app.route('/answer', methods=['POST'])
 def record_answer():
-    
-    response = request.form['answer'] # type: ignore
-    RESPONSES.append(response)
+    responses = session['RESPONSES'] #load the stored responses
+    response = request.form['answer'] #Get the latest response from the form. type: ignore
+    responses.append(response) # add the latest response to the list of responses
+    session['RESPONSES'] = responses #update the stored responses with the new list
 
-    if len(RESPONSES) >= len(satisfaction_survey.questions):
+    if len(session['RESPONSES']) >= len(satisfaction_survey.questions):
         return redirect('/thankyou')
     else:
-        return redirect (f'/questions/{len(RESPONSES)}')
+        return redirect (f"/questions/{len(session['RESPONSES'])}")
 
 @app.route('/thankyou')
 def thankyou():
     return render_template('thankyou.html')
+
