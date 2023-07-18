@@ -14,7 +14,6 @@ instructions = satisfaction_survey.instructions
 
 @app.route("/")
 def show_home():
-    # session['RESPONSES']  = []
     return render_template(
         "index.html", quiz_title=quiz_title, instructions=instructions
     )
